@@ -37,7 +37,8 @@
 					],
 					"path": [
 						"api",
-						"orders"
+						"orders",
+                        "execute"
 					]
 				},
 				"description": "Submits a market order for 50 SOL. Returns an orderId."
