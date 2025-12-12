@@ -9,44 +9,65 @@ export const orderQueue = new Queue('order-queue', {
 
 const dexService = new MockDexService();
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const worker = new Worker('order-queue', async (job) => {
     const { amount, orderId } = job.data;
     
-    // ROUTING (Comparing DEX prices)
+    // Wait for client to connect
+    await sleep(1000); 
+    
+    // // Routing 
     await job.updateProgress(10); 
-    websocketManager.notify(orderId, 'routing', { message: 'Comparing DEX prices...' });
+    websocketManager.notify(orderId, 'routing', { message: 'Fetching quotes from DEXs...' });
     
-    const quote = await dexService.getBestQuote(amount);
+    console.log(`[Router] Fetching quotes for ${amount} SOL...`);
     
-    // BUILDING (Creating transaction)
+    // Fetch individual quotes
+    const raydium = await dexService.getRaydiumQuote('SOL', 'USDC', amount);
+    const meteora = await dexService.getMeteoraQuote('SOL', 'USDC', amount);
+
+    console.log(`[Router]  Raydium Price: $${raydium.price}`);
+    console.log(`[Router]  Meteora Price: $${meteora.price}`);
+
+    // Decide better one (Lower price)
+    const quote = raydium.price < meteora.price ? raydium : meteora;
+    
+    const decisionLog = `[Router] Best Route: ${quote.dex} ($${quote.price})`;
+    console.log(decisionLog); 
+    
+    // Wait so that user sees statuses
+    await sleep(1000); 
+
+    // Creating transaction
     await job.updateProgress(30);
     websocketManager.notify(orderId, 'building', { 
-        message: `Creating transaction for ${quote.dex} at $${quote.price}` 
+        message: decisionLog 
     });
 
-    // SUBMITTED (Transaction sent to network)
-    // We notify this BEFORE executing, to simulate sending it out
+    await sleep(1000); 
+
+    // Submiting the transaction
     await job.updateProgress(50);
     websocketManager.notify(orderId, 'submitted', { 
         message: 'Transaction sent to network' 
     });
 
-    // Simulating network delay
     const result = await dexService.executeTrade(quote.dex, amount);
     
-    // Save to Database
+    // Save order history in database
     try {
         await pgPool.query(
             `INSERT INTO orders (order_id, amount, dex, price, tx_hash, status) 
              VALUES ($1, $2, $3, $4, $5, 'confirmed')`,
             [orderId, amount, quote.dex, quote.price, result.txHash]
         );
-        console.log(`Saved order ${orderId} to Database.`);
+        console.log(`[DB] Saved order ${orderId} to Database.`);
     } catch (dbError) {
         console.error("Failed to save to DB:", dbError);
     }
 
-    // CONFIRMED (Transaction successful)
+    // Confirm the purchase 
     await job.updateProgress(100);
     websocketManager.notify(orderId, 'confirmed', { 
         txHash: result.txHash,
@@ -63,7 +84,6 @@ const worker = new Worker('order-queue', async (job) => {
 worker.on('failed', async (job, err) => {
     if (job) {
         const { orderId, amount } = job.data;
-        // FAILED
         await pgPool.query(
             `INSERT INTO orders (order_id, amount, status) VALUES ($1, $2, 'failed')`,
             [orderId, amount]
