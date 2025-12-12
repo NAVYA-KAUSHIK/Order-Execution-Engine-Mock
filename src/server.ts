@@ -24,14 +24,20 @@ server.register(async function (fastify) {
   });
 });
 
-server.post('/api/orders', async (request, reply) => {
+server.post('/api/orders/execute', async (request, reply) => {
     const body = request.body as { amount: number };
     if (!body.amount) return reply.status(400).send({ error: "Amount required" });
 
     const orderId = `order_${Date.now()}`;
 
-    // Add to queue
-    await orderQueue.add('buy-order', { orderId, amount: body.amount });
+    // Add to queue and exponential backoff retry
+    await orderQueue.add('buy-order', { orderId, amount: body.amount }, {
+        attempts: 3,
+        backoff: {
+            type: 'exponential',
+            delay: 1000 
+        }
+    });
 
     return reply.send({ 
         status: 'pending', 

@@ -27,7 +27,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://order-execution-engine-mock-production.up.railway.app/api/orders",
+					"raw": "https://order-execution-engine-mock-production.up.railway.app/api/orders/execute",
 					"protocol": "https",
 					"host": [
 						"order-execution-engine-mock-production",

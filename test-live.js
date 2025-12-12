@@ -6,7 +6,7 @@ async function runLiveTest() {
     console.log(`[Client] Submitting Order to ${RAILWAY_DOMAIN}...`);
     
     // POST request
-    const response = await fetch(`https://${RAILWAY_DOMAIN}/api/orders`, {
+    const response = await fetch(`https://${RAILWAY_DOMAIN}/api/orders/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 50 })
