@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-const RAILWAY_DOMAIN = 'ordercheck-production.up.railway.app'; 
+const RAILWAY_DOMAIN = 'order-execution-engine-mock-production.up.railway.app'; 
 
 async function runLiveTest() {
     console.log(`[Client] Submitting Order to ${RAILWAY_DOMAIN}...`);

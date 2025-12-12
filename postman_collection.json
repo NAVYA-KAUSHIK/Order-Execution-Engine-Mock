@@ -27,10 +27,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://ordercheck-production.up.railway.app/api/orders",
+					"raw": "https://order-execution-engine-mock-production.up.railway.app/api/orders",
 					"protocol": "https",
 					"host": [
-						"ordercheck-production",
+						"order-execution-engine-mock-production",
 						"up",
 						"railway",
 						"app"
