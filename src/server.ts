@@ -2,17 +2,14 @@ import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import { checkConnections } from './config';
 import { orderQueue } from './queue';
-import { websocketManager } from './websocketManager';
+import { websocketManager } from './Manager';
 
 const server = Fastify({ logger: true });
 
 server.register(websocket);
 
-// 1. WebSocket Endpoint
 server.register(async function (fastify) {
   fastify.get('/ws', { websocket: true }, (connection: any, req) => {
-    
-    // SAFETY FIX: Try to find the socket in .socket, if not there, use connection itself
     const socket = connection.socket || connection;
 
     const query = req.query as { orderId: string };
@@ -23,12 +20,10 @@ server.register(async function (fastify) {
       return;
     }
 
-    // Register this connection
     websocketManager.addClient(orderId, socket);
   });
 });
 
-// 2. HTTP Endpoint
 server.post('/api/orders', async (request, reply) => {
     const body = request.body as { amount: number };
     if (!body.amount) return reply.status(400).send({ error: "Amount required" });
@@ -39,9 +34,9 @@ server.post('/api/orders', async (request, reply) => {
     await orderQueue.add('buy-order', { orderId, amount: body.amount });
 
     return reply.send({ 
-        status: 'queued', 
+        status: 'pending', 
         orderId, 
-        message: 'Order received. Connect to WebSocket for updates.' 
+        message: 'Order received and queued' 
     });
 });
 

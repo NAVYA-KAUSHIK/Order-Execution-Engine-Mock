@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq';
-import { redisClient, pgPool } from './config'; // Import pgPool
+import { redisClient, pgPool } from './config';
 import { MockDexService } from './services/mockDex';
-import { websocketManager } from './websocketManager';
+import { websocketManager } from './Manager';
 
 export const orderQueue = new Queue('order-queue', {
     connection: redisClient
@@ -12,37 +12,41 @@ const dexService = new MockDexService();
 const worker = new Worker('order-queue', async (job) => {
     const { amount, orderId } = job.data;
     
-    // 1. Processing
-    websocketManager.notify(orderId, 'processing', { message: 'Worker started job' });
-    
-    // 2. Routing
+    // ROUTING (Comparing DEX prices)
     await job.updateProgress(10); 
-    websocketManager.notify(orderId, 'routing', { message: 'Checking prices on DEXs...' });
+    websocketManager.notify(orderId, 'routing', { message: 'Comparing DEX prices...' });
     
     const quote = await dexService.getBestQuote(amount);
     
-    // 3. Building
-    await job.updateProgress(50);
+    // BUILDING (Creating transaction)
+    await job.updateProgress(30);
     websocketManager.notify(orderId, 'building', { 
-        message: `Found best price on ${quote.dex}: $${quote.price}` 
+        message: `Creating transaction for ${quote.dex} at $${quote.price}` 
     });
 
-    // 4. Execution
+    // SUBMITTED (Transaction sent to network)
+    // We notify this BEFORE executing, to simulate sending it out
+    await job.updateProgress(50);
+    websocketManager.notify(orderId, 'submitted', { 
+        message: 'Transaction sent to network' 
+    });
+
+    // Simulating network delay
     const result = await dexService.executeTrade(quote.dex, amount);
     
-    // 5. SAVE TO DATABASE (The New Part)
+    // Save to Database
     try {
         await pgPool.query(
             `INSERT INTO orders (order_id, amount, dex, price, tx_hash, status) 
              VALUES ($1, $2, $3, $4, $5, 'confirmed')`,
             [orderId, amount, quote.dex, quote.price, result.txHash]
         );
-        console.log(`💾 Saved order ${orderId} to Database.`);
+        console.log(`Saved order ${orderId} to Database.`);
     } catch (dbError) {
-        console.error("❌ Failed to save to DB:", dbError);
+        console.error("Failed to save to DB:", dbError);
     }
 
-    // 6. Confirm to User
+    // CONFIRMED (Transaction successful)
     await job.updateProgress(100);
     websocketManager.notify(orderId, 'confirmed', { 
         txHash: result.txHash,
@@ -58,8 +62,8 @@ const worker = new Worker('order-queue', async (job) => {
 
 worker.on('failed', async (job, err) => {
     if (job) {
-        // Log failure to DB
         const { orderId, amount } = job.data;
+        // FAILED
         await pgPool.query(
             `INSERT INTO orders (order_id, amount, status) VALUES ($1, $2, 'failed')`,
             [orderId, amount]
@@ -69,4 +73,4 @@ worker.on('failed', async (job, err) => {
     }
 });
 
-console.log("⚙️  Queue System Initialized");
+console.log("Queue System Initialized");

@@ -1,9 +1,7 @@
-// tests/engine.test.ts
 
 import { MockDexService } from '../src/services/mockDex';
-import { websocketManager } from '../src/websocketManager';
+import { websocketManager } from '../src/Manager';
 
-// Mock the dependencies so we don't need Redis/DB for unit tests
 jest.mock('../src/websocketManager');
 
 describe('Order Execution Engine Tests', () => {
@@ -14,18 +12,17 @@ describe('Order Execution Engine Tests', () => {
         jest.clearAllMocks();
     });
 
-    // --- 1. Routing Logic Tests (The Brain) ---
     
     test('1. DEX Service should return a Raydium quote', async () => {
         const quote = await dexService.getRaydiumQuote('SOL', 'USDC', 10);
         expect(quote.dex).toBe('Raydium');
-        expect(quote.fee).toBe(0.003); // Check specific fee from guide
+        expect(quote.fee).toBe(0.003);
     });
 
     test('2. DEX Service should return a Meteora quote', async () => {
         const quote = await dexService.getMeteoraQuote('SOL', 'USDC', 10);
         expect(quote.dex).toBe('Meteora');
-        expect(quote.fee).toBe(0.002); // Check specific fee from guide
+        expect(quote.fee).toBe(0.002); 
     });
 
     test('3. Router should pick Raydium if price is lower', async () => {
@@ -48,7 +45,6 @@ describe('Order Execution Engine Tests', () => {
         expect(best.price).toBe(90);
     });
 
-    // --- 2. Execution Tests ---
 
     test('5. Execution should return a Transaction Hash', async () => {
         const result = await dexService.executeTrade('Raydium', 10);
@@ -64,7 +60,6 @@ describe('Order Execution Engine Tests', () => {
         expect(duration).toBeGreaterThanOrEqual(1900); 
     });
 
-    // --- 3. WebSocket Manager Tests ---
 
     test('7. WebSocket manager should add clients', () => {
         const mockSocket = { on: jest.fn() } as any;
@@ -76,7 +71,6 @@ describe('Order Execution Engine Tests', () => {
         expect(() => websocketManager.notify('missing_order', 'status')).not.toThrow();
     });
 
-    // --- 4. Logic Validation Tests ---
     
     test('9. Price should always be positive', async () => {
         const quote = await dexService.getBestQuote(10);

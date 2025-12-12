@@ -1,5 +1,3 @@
-// src/services/mockDex.ts
-
 interface Quote {
     dex: 'Raydium' | 'Meteora';
     price: number;
@@ -8,16 +6,15 @@ interface Quote {
 
 export class MockDexService {
     
-    // Helper: Pauses the code
+    // Pause the code for certain amount of time
     private async sleep(ms: number) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // 1. Get a Fake Price from Raydium
-    // Matches Guide: basePrice * (0.98 + random * 0.04)
+    // Get a Fake Price from Raydium
     async getRaydiumQuote(tokenIn: string, tokenOut: string, amount: number): Promise<Quote> {
         await this.sleep(200); 
-        const basePrice = 100; // Assume 1 SOL = $100 for simplicity
+        const basePrice = 100; // Assuming 1SOL is $100
         const price = basePrice * (0.98 + Math.random() * 0.04); 
         
         return { 
@@ -27,8 +24,7 @@ export class MockDexService {
         };
     }
 
-    // 2. Get a Fake Price from Meteora
-    // Matches Guide: basePrice * (0.97 + random * 0.05)
+    // Get a Fake Price from Meteora
     async getMeteoraQuote(tokenIn: string, tokenOut: string, amount: number): Promise<Quote> {
         await this.sleep(200);
         const basePrice = 100;
@@ -41,9 +37,9 @@ export class MockDexService {
         };
     }
 
-    // 3. Compare and Pick the Best
+    // Compare and Pick the Cheaper
     async getBestQuote(amount: number): Promise<Quote> {
-        // We hardcode 'SOL' and 'USDC' just to satisfy the new signature
+        // We hardcode 'SOL' and 'USDC' 
         const [raydium, meteora] = await Promise.all([
             this.getRaydiumQuote('SOL', 'USDC', amount),
             this.getMeteoraQuote('SOL', 'USDC', amount)
@@ -59,7 +55,6 @@ export class MockDexService {
     }
 
     // 4. Simulate the Trade execution
-    // Matches Guide: sleep(2000 + random * 1000)
     async executeTrade(dex: string, amount: number) {
         // Random delay between 2000ms and 3000ms
         const delay = 2000 + Math.random() * 1000;

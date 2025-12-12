@@ -4,7 +4,7 @@ import { WebSocket } from 'ws';
 const clients = new Map<string, WebSocket>();
 
 export const websocketManager = {
-    // 1. Save a user's connection when they connect
+    //  Save a user's connection when they connect
     addClient(orderId: string, socket: WebSocket) {
         clients.set(orderId, socket);
         console.log(`Client connected for ${orderId}`);
@@ -16,7 +16,7 @@ export const websocketManager = {
         });
     },
 
-    // 2. Send a message to a specific user
+    // Send a message to a specific user
     notify(orderId: string, status: string, data: any = {}) {
         const socket = clients.get(orderId);
         if (socket && socket.readyState === WebSocket.OPEN) {
