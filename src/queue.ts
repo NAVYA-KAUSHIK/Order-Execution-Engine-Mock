@@ -15,7 +15,7 @@ const worker = new Worker('order-queue', async (job) => {
     const { amount, orderId } = job.data;
     
     // Wait for client to connect
-    await sleep(1000); 
+    await sleep(3000); 
     
     // // Routing 
     await job.updateProgress(10); 
