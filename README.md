@@ -24,8 +24,12 @@ The system follows the following architecture to ensure high concurrency and non
 
 <img width="865" height="269" alt="Screenshot 2025-12-12 214732" src="https://github.com/user-attachments/assets/46b65773-4fea-4568-9f9e-51d834a0fe5a" />
 
-Production Logs (Railway deployement Logs): 
+## Production Logs (Railway deployement Logs): 
 <img width="1734" height="231" alt="image" src="https://github.com/user-attachments/assets/82e865a2-873e-482c-aa41-f29cac15fd82" />
+
+## 10 unit tests covering routing logic, queue behaviour, and WebSocket lifecycle
+
+<img width="721" height="369" alt="Screenshot 2025-12-13 115526" src="https://github.com/user-attachments/assets/571357bf-8f42-45da-8c65-ba42c2b80082" />
 
 
 -----
@@ -58,7 +62,11 @@ Production Logs (Railway deployement Logs):
 
 -----
 
-##  Setup 
+## Postman 
+
+Import postman_collection.json in Postman and hit send.
+
+##  Local Setup 
 
 ### Please Make Sure you have the following before running:
 
@@ -95,10 +103,7 @@ PORT = 3000
 ```bash
 npm run dev
 ```
-## ✅ Testing
+## 5\. Running Unit Tests
 
-The system includes a comprehensive test suite covering routing logic, queue management, and WebSocket lifecycles.
-
-### Running Tests
 ```bash
-npm test
+npx jest
