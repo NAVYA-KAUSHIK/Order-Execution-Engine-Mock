@@ -56,5 +56,8 @@ const start = async () => {
     process.exit(1);
   }
 };
+server.get('/', async () => {
+  return { status: 'ok', message: 'Order Execution Engine is Running ' };
+});
 
 start();
