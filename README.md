@@ -3,13 +3,12 @@
 An order execution engine that processes Market Order Type with DEX routing and WebSocket status updates - A mock implementation.
 
 **Live Deployment URL:** [https://order-execution-engine-mock-production.up.railway.app](https://order-execution-engine-mock-production.up.railway.app)
-
 **Youtube Video Link:** [https://youtu.be/vpv_YRanMGY?feature=shared](https://youtu.be/vpv_YRanMGY?feature=shared)
 ---
 
 ## Architecture
 
-The system follows the following architecture to ensure high concurrency and non-blocking I/O.
+The system follows the following architecture.
 
 
 <img width="1431" height="732" alt="Untitled-2025-12-13-0952" src="https://github.com/user-attachments/assets/fd3973f0-6cbb-4a0a-8386-f2630ee55250" />
