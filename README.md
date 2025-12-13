@@ -87,6 +87,7 @@ Create a `.env` file in the root directory:
 DATABASE_URL=postgresql://user:pass@localhost:5432/orders_db
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
+PORT = 3000
 ```
 
 ### 4\. Run Locally
@@ -94,3 +95,10 @@ REDIS_PORT=6379
 ```bash
 npm run dev
 ```
+## ✅ Testing
+
+The system includes a comprehensive test suite covering routing logic, queue management, and WebSocket lifecycles.
+
+### Running Tests
+```bash
+npm test
