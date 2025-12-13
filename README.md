@@ -1,53 +1,28 @@
 #  Order Execution Engine
 
 An order execution engine that processes Market Order Type with DEX routing and WebSocket status updates - A mock implementation.
-**Live Deployment URL:** `https://order-execution-engine-mock-production.up.railway.app'
+
+**Live Deployment URL:** [https://order-execution-engine-mock-production.up.railway.app](https://order-execution-engine-mock-production.up.railway.app)
 
 ---
 
 ## Architecture
 
-The system follows the following architecture to ensure high concurrency and non-blocking I/O. It separates the API layer (Fastify) from the Execution layer (Worker) using a Redis Queue.
+The system follows the following architecture to ensure high concurrency and non-blocking I/O.
 
 
-```mermaid
-graph TD
-    User((Client))
-    
-    subgraph "API Server (Fastify)"
-        API[HTTP Endpoint]
-        WS[WebSocket Manager]
-    end
-    
-    subgraph "Async Processing"
-        Queue["Redis Queue (BullMQ)"]
-        Worker[Worker Node]
-    end
-    
-    subgraph "Data & External"
-        DB[(PostgreSQL)]
-        DEX[DEX Aggregator Service]
-    end
+<img width="1431" height="732" alt="Untitled-2025-12-13-0952" src="https://github.com/user-attachments/assets/fd3973f0-6cbb-4a0a-8386-f2630ee55250" />
 
-    User -- "1. POST /execute" --> API
-    API -- "2. Return OrderID" --> User
-    User -- "3. Connect WebSocket" --> WS
-    
-    API -- "Add Job" --> Queue
-    Queue -- "Process Job" --> Worker
-    
-    Worker -- "Get Price Quotes" --> DEX
-    Worker -- "Save Trade" --> DB
-    Worker -- "Emit Events" --> WS
-    WS -- "4. Real-time Updates" --> User
-```
+## Data Flow
 
-## Live Execution Logs
+1.  Client sends a POST **request**; API pushes it to the **Redis Queue** and returns an Order ID.
+2.  The **Worker** picks up the job from the queue.
+3.  **ROUTING:** Worker fetches quotes from Raydium & Meteora, compares them, and selects the best route.
+4.  **Execution Progress Updates:** Updates such as pending, routing, building etc. are pushed via **WebSockets** to the client while the trade is saved to **PostgreSQL**.
 
-The engine transparently logs price comparisons between DEXs before executing the best trade:
+## Execution Logs
 
 <img width="865" height="269" alt="Screenshot 2025-12-12 214732" src="https://github.com/user-attachments/assets/46b65773-4fea-4568-9f9e-51d834a0fe5a" />
-
 
 Production Logs (Railway deployement Logs): 
 <img width="1734" height="231" alt="image" src="https://github.com/user-attachments/assets/82e865a2-873e-482c-aa41-f29cac15fd82" />
@@ -60,13 +35,13 @@ Production Logs (Railway deployement Logs):
 ### 1. I chose the **Mock Implementation** (Option B) to keep the main focus on architectural patterns (queues, websockets, routing logic) and flow of the order execution.
 
   * **Simulated DEX Responses with realistic delays:** I added artificial delays (2-5 seconds) to realistically mimic Solana network congestion.
-  * Mock price varied between DEXs with a~2-5% difference.
+  * Mock price varied between DEXs with a ~2-5% difference.
 
-### 2. The engine processes **Market Orders** (Immediate Execution). This was chosen because it represents the core "Swap" functionality of any DEX.
+### 2. The engine processes **Market Orders** (Immediate Execution at current price). This was chosen because it represents the core Swap functionality of any DEX.
 
-  **To Extend:**
-  *  For *Limit Orders*, we would simply add a "Watcher" service that checks the Database periodically and pushes jobs to the `orderQueue` only when the target price is hit.
-  *  For *Sniper Orders*, we would implement a "Launch Listener." Instead of waiting for a user to click buy, the system would constantly scan the blockchain for new "Pool Created" events. The moment a new token becomes tradeable, the system would automatically trigger a buy order.
+  **The Implementation can be extended as follows:**
+  *  For *Limit Orders*, we would simply add a Watcher type of service that checks the Database periodically and pushes jobs to the `orderQueue` only when the target price is hit.
+  *  For *Sniper Orders*, we would implement a " Market Listener." This service waits for the specific signal that a new trading pool has opened. The moment trading begins, our system triggers and executes the buy order to get the best possible entry price.
 
 -----
 
@@ -83,22 +58,22 @@ Production Logs (Railway deployement Logs):
 
 -----
 
-##  Setup & Installation
+##  Setup 
 
-### Prerequisites
+### Please Make Sure you have the following before running:
 
   * Node.js (v18+)
   * Redis 
   * PostgreSQL
 
-### 1\. Clone the Repo
+### 1\. Clone the Repository
 
 ```bash
 git clone https://github.com/NAVYA-KAUSHIK/Order-Execution-Engine-Mock.git
 cd Order-Execution-Engine-Mock
 ```
 
-### 2\. Install Dependencies
+### 2\. Run
 
 ```bash
 npm install
