@@ -2,7 +2,7 @@
 import { MockDexService } from '../src/services/mockDex';
 import { websocketManager } from '../src/Manager';
 
-jest.mock('../src/websocketManager');
+jest.mock('../src/Manager');
 
 describe('Order Execution Engine Tests', () => {
     let dexService: MockDexService;
@@ -56,7 +56,6 @@ describe('Order Execution Engine Tests', () => {
         const start = Date.now();
         await dexService.executeTrade('Meteora', 10);
         const duration = Date.now() - start;
-        // Should be at least 2000ms as per guide
         expect(duration).toBeGreaterThanOrEqual(1900); 
     });
 
