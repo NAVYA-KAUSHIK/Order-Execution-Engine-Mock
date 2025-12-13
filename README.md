@@ -92,7 +92,7 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-DATABASE_URL=postgresql://user:pass@localhost:5432/orders_db
+DATABASE_URL=postgresql://your_username:your_password@localhost:5432/order_execution_engine
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 PORT=3000
