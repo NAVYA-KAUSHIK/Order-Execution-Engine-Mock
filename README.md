@@ -95,7 +95,7 @@ Create a `.env` file in the root directory:
 DATABASE_URL=postgresql://user:pass@localhost:5432/orders_db
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
-PORT = 3000
+PORT=3000
 ```
 
 ### 4\. Run Locally
